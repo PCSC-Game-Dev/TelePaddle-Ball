@@ -6,6 +6,7 @@ class ThrowBall : ZilchComponent
     var Player : CogPath = null;
     var MaxLength : Real;
     var Controller : Gamepad = null;
+    //test
     
     function Initialize(init : CogInitializer)
     {
