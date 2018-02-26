@@ -1,0 +1,33 @@
+class ClipDetector : ZilchComponent
+{
+    var Player : Cog = null;
+    var CollisionCount : Integer = 0;
+    function Initialize(init : CogInitializer)
+    {
+        this.Player = this.Owner.Parent.ThrowBall.Player.Cog;
+        Zero.Connect(this.Owner, Events.CollisionStarted, this.OnCollisionStarted);
+        Zero.Connect(this.Owner, Events.CollisionEnded, this.OnCollisionEnded);
+    }
+    
+    function OnCollisionStarted(event : CollisionEvent)
+    {
+        if(!event.OtherObject.Collider.Ghost)
+        {
+            this.Player.PlayerController.SafeTeleport = false;
+            ++this.CollisionCount;
+        }
+    }
+
+    function OnCollisionEnded(event : CollisionEvent)
+    {
+        if(!event.OtherObject.Collider.Ghost)
+        {
+            --this.CollisionCount;
+            if(this.CollisionCount < 1 && this.Player != null)
+            {
+                this.Player.PlayerController.SafeTeleport = true;
+            }
+        }
+    }
+
+}

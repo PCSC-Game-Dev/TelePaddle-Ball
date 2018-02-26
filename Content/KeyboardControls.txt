@@ -1,0 +1,6 @@
+A and D to move
+W to jump
+Space to teleport
+Aim with the mouse
+Left click to throw
+Right click to retract

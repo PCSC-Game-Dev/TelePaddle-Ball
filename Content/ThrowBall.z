@@ -1,0 +1,81 @@
+class ThrowBall : ZilchComponent
+{
+    [Property]
+    var Speed : Integer = 0;
+    [Property]
+    var Player : CogPath = null;
+    var MaxLength : Real;
+    var Controller : Gamepad = null;
+    
+    function Initialize(init : CogInitializer)
+    {
+        this.Controller = Zero.Gamepads.GetGamePad(0);
+        
+        this.MaxLength = this.Player.Cog.JointLimit.UpperLimit;
+        this.Player.Cog.JointLimit.UpperLimit = 0.4;
+        
+        if(this.Controller.IsActive && this.Player.Cog.PlayerController.UseController)
+        {
+            Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+        }
+        else
+        {
+            Zero.Connect(this.LevelSettings, Events.LeftMouseDown, this.OnLeftMouseDown);
+            Zero.Connect(this.LevelSettings, Events.RightMouseDown, this.OnRightMouseDown);
+        }
+        Zero.Connect(this.Owner, Events.CollisionStarted, this.OnCollisionStarted);
+        
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        if((this.Controller.RightTrigger >= 0.5 || this.Controller.IsButtonPressed(Buttons.B)) 
+            && this.Player.Cog.JointLimit.UpperLimit == 0.4)
+        {
+            var throwDirection = this.Player.Cog.PlayerController.Aim.Transform.Translation;
+            throwDirection.Z = 0;
+            this.ThrowBall(throwDirection);
+        }
+        if(this.Controller.IsButtonPressed(Buttons.RightShoulder) || this.Controller.IsButtonPressed(Buttons.Y))
+        {
+            this.ResetBall();
+        }
+    }
+
+    function OnCollisionStarted(event : CollisionEvent)
+    {
+        if(event.OtherObject.Name == "Reset")
+        {
+            this.ResetBall();
+        }
+    }
+
+    function OnLeftMouseDown(event : ViewportMouseEvent)
+    {
+        if(this.Player.Cog.JointLimit.UpperLimit == 0.4)
+        {
+            var mousePosition = event.ToWorldZPlane(0);
+            var targetDirection = mousePosition - this.Owner.Transform.Translation;
+            this.ThrowBall(targetDirection);
+        }
+    }
+    
+    function OnRightMouseDown(event : ViewportMouseEvent)
+    {
+        this.ResetBall();
+    }
+    
+    function ThrowBall(targetDirection : Real3)
+    {
+        this.Owner.SphereCollider.Ghost = false;
+        this.Player.Cog.JointLimit.UpperLimit = this.MaxLength;
+        this.Owner.RigidBody.Velocity = Math.Normalize(targetDirection) * this.Speed;
+    }
+    
+    function ResetBall()
+    {
+        this.Owner.Transform.Translation = this.Player.Cog.Transform.Translation;
+        this.Player.Cog.JointLimit.UpperLimit = 0.4;
+        this.Owner.SphereCollider.Ghost = true;
+    }
+}

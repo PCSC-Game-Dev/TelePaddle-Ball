@@ -1,0 +1,7 @@
+ContentLibrary = 
+{
+	string Name = "Platformer Challenge",
+	uint64 LibraryId = 5843a31190944604,
+	string SourceControlType = "",
+	bool ReadOnly = false,
+},

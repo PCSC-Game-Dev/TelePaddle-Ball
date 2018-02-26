@@ -1,0 +1,4 @@
+class LevelToLoad : ZilchComponent
+{
+    [Property] var Level : Level = null;
+}

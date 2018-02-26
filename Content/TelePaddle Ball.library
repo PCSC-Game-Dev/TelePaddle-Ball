@@ -1,0 +1,7 @@
+ContentLibrary = 
+{
+	string Name = "TelePaddle Ball",
+	uint64 LibraryId = 5af8ba3b42cbb4e4,
+	string SourceControlType = "",
+	bool ReadOnly = false,
+},

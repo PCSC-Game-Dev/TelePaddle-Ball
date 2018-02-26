@@ -1,0 +1,43 @@
+class StringSize : ZilchComponent
+{
+    [Dependency]
+    var Transform : Transform;
+    [Dependency]
+    var Orientation : Orientation;
+    [Dependency]
+    var Area : Area;
+    
+    [Property]
+    var Width : Real = 0;
+    
+    [Property]
+    var BallPath : CogPath = null;
+    var Ball : Cog = null;
+    
+    function Initialize(init : CogInitializer)
+    {
+        this.Ball = this.BallPath.Cog;
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+    }
+    
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        var length = this.GetLength();
+        var width = this.Width;
+        
+        var size = Real2(length, width);
+        
+        this.Area.Size = size;
+    }
+    
+    function GetLength() : Real
+    {
+        if(this.Owner.Parent.JointLimit.UpperLimit <= 0.4)
+        {
+            return 0;
+        }
+        this.Owner.Orientation.LookAtPoint(this.Ball.Transform.Translation);
+        return Math.Distance(this.Owner.Transform.WorldTranslation.XY, this.Ball.Transform.WorldTranslation.XY);
+    }
+    
+}

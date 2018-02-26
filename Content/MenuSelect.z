@@ -1,0 +1,87 @@
+class MenuSelect : ZilchComponent
+{
+    var Controller : Gamepad = null;
+    var MenuItems : Array[Cog] = new Array[Cog]();
+    
+    function Initialize(init : CogInitializer)
+    {
+        this.Controller = Zero.Gamepads.GetGamePad(0);
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+        Zero.Connect(this.Controller, Events.GamepadStickFlicked, this.OnGamepadStickFlicked);
+        
+        var menuItems = this.Space.AllObjects();
+        
+        foreach( var item in menuItems)
+        {
+            if(item.LevelToLoad != null)
+            {
+                this.MenuItems.Add(item);
+            }
+        }
+    }
+
+    function OnGamepadStickFlicked(event : GamepadEvent)
+    {
+        if(event.FlickedStick == 1 && Math.Abs(event.FlickDirection.Y) > 0.5)
+        {
+            for(var i = 0; i < this.MenuItems.Count; ++i)
+            {
+                if(this.Owner.Transform.Translation.Y == this.MenuItems[i].Transform.Translation.Y - 0.5)
+                {
+                    var currentPos = this.Owner.Transform.Translation;
+                    if(i < this.MenuItems.Count - 1)
+                    {
+                        currentPos = this.MenuItems[i + 1].Transform.Translation;
+                        currentPos.Y -= 0.5;
+                    }
+                    else
+                    {
+                        currentPos = this.MenuItems[0].Transform.Translation;
+                        currentPos.Y -= 0.5;
+                    }
+                    this.Owner.Transform.Translation = currentPos;
+                    break;
+                }
+            }
+        }
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        if(Zero.Keyboard.KeyIsPressed(Keys.Down) || Zero.Keyboard.KeyIsPressed(Keys.Up) ||
+            Zero.Keyboard.KeyIsPressed(Keys.W) || Zero.Keyboard.KeyIsPressed(Keys.S) ||
+            this.Controller.IsButtonPressed(Buttons.DpadUp) || this.Controller.IsButtonPressed(Buttons.DpadDown))
+        {
+            for(var i = 0; i < this.MenuItems.Count; ++i)
+            {
+                if(this.Owner.Transform.Translation.Y == this.MenuItems[i].Transform.Translation.Y - 0.5)
+                {
+                    var currentPos = this.Owner.Transform.Translation;
+                    if(i < this.MenuItems.Count - 1)
+                    {
+                        currentPos = this.MenuItems[i + 1].Transform.Translation;
+                        currentPos.Y -= 0.5;
+                    }
+                    else
+                    {
+                        currentPos = this.MenuItems[0].Transform.Translation;
+                        currentPos.Y -= 0.5;
+                    }
+                    this.Owner.Transform.Translation = currentPos;
+                    break;
+                }
+            }
+        }
+        
+        if(Zero.Keyboard.KeyIsPressed(Keys.Enter) || this.Controller.IsButtonPressed(Buttons.A))
+        {
+            for(var i = 0; i < this.MenuItems.Count; ++i)
+            {
+                if(this.Owner.Transform.Translation.Y == this.MenuItems[i].Transform.Translation.Y - 0.5)
+                {
+                    this.Space.LoadLevel(this.MenuItems[i].LevelToLoad.Level);
+                }
+            }
+        }
+    }
+}

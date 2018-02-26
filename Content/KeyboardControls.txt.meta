@@ -1,0 +1,8 @@
+TextContent = 
+{
+	TextBuilder = 
+	{
+		string Name = "KeyboardControls",
+		uint64 ResourceId = 585bbe278757c068,
+	},
+},

@@ -1,0 +1,8 @@
+TextContent = 
+{
+	ZilchScriptBuilder = 
+	{
+		string Name = "ClipDetector",
+		uint64 ResourceId = 58479e5b1060b457,
+	},
+},

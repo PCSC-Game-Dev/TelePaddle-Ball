@@ -1,0 +1,170 @@
+class PlayerController : ZilchComponent
+{
+    var DataCog : Cog = null;
+    
+    [Property]
+    var Ball : CogPath = null;
+    var Jumps : Integer = 2;
+    var CanTeleport : Boolean = true;
+    var SafeTeleport : Boolean = true;
+    var TeleportPosition : Real3 = Real3();
+    
+    [Property]
+    var Red : Real4 = Real4();
+    [Property]
+    var Green : Real4 = Real4();
+    
+    [Property]
+    var UseController : Boolean = false;
+    var Controller : Gamepad = null;
+    
+    var Aim : Cog = null;
+    
+    
+    function Initialize(init : CogInitializer)
+    {
+        Zero.Mouse.Cursor = Cursor.Invisible;
+        this.Controller = Zero.Gamepads.GetGamePad(0);
+        this.Aim = this.Owner.FindChildByName("Aim");
+        this.DataCog = Zero.ObjectStore.RestoreOrArchetype("Data", Archetype.Data, this.Space);
+        this.UseController = this.DataCog.DataSaver.UseController;
+        
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+        Zero.Connect(this.Owner, Events.CollisionStarted, this.OnCollisionStarted);
+        if(!(this.Controller.IsActive && this.UseController))
+        {
+            Zero.Connect(this.LevelSettings, Events.MouseUpdate, this.OnMouseUpdate);
+        }
+    }
+
+    function OnCollisionStarted(event : CollisionEvent)
+    {
+        if(event.OtherObject.Name == "Reset")
+        {
+            this.Space.LoadLevel(Level.Loss);
+        }
+    }
+
+    function OnMouseUpdate(event : ViewportMouseEvent)
+    {
+        Zero.Mouse.Cursor = Cursor.Invisible;
+        var mousePosition = event.ToWorldZPlane(0.0);
+        var playerPosition = this.Owner.Transform.WorldTranslation;
+        var vectorToMouse = mousePosition - playerPosition;
+        vectorToMouse.Z = 1;
+        this.Aim.Transform.Translation = Math.Normalize(vectorToMouse) * 2;
+        
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        if(this.Owner.SweptController.Grounded)
+        {
+            this.Jumps = 2;
+            this.CanTeleport = true;
+        }
+        var movement = Real3(0.0, 0.0, 0.0);
+
+        if(this.Controller.IsActive && this.UseController)
+        {
+            if(Math.Abs(this.Controller.RightStick.X) >= 0.9 || Math.Abs(this.Controller.RightStick.Y) >= 0.9)
+            {
+                this.Aim.Transform.Translation = Real3(Math.Normalize(this.Controller.RightStick), 1) * 2;
+            }
+            movement.X += this.Controller.LeftStick.X;
+            if(this.Controller.IsButtonHeld(Buttons.DpadLeft))
+            {
+                movement.X -= 1.0;
+            }
+            if(this.Controller.IsButtonHeld(Buttons.DpadRight))
+            {
+                movement.X += 1.0;
+            }
+
+            if(this.Controller.IsButtonPressed(Buttons.A) || this.Controller.IsButtonPressed(Buttons.LeftShoulder))
+            {            
+                if(this.Owner.SweptController.Grounded)
+                {
+                    this.Owner.SweptController.Jump();
+                }
+                else if(this.Jumps > 0)
+                {
+                    this.Owner.SweptController.JumpUnconditionally();
+                    --this.Jumps;
+                }
+                --this.Jumps;
+            }
+            
+            else if(this.Controller.IsButtonHeld(Buttons.A) == false && this.Controller.IsButtonHeld(Buttons.LeftShoulder) == false)
+            {
+                if(this.Owner.SweptController.Jumping)
+                {
+                    this.Owner.SweptController.JumpCancel();
+                }
+            }
+            
+            if((this.Controller.LeftTrigger >= 0.5 || this.Controller.IsButtonPressed(Buttons.X)) && this.CanTeleport && 
+                this.SafeTeleport && this.Owner.JointLimit.UpperLimit != 0.4)
+            {
+                this.Ball.Cog.RigidBody.Velocity = Real3(0,0,0);
+                this.Owner.Transform.Translation = this.Ball.Cog.Transform.Translation;
+                this.Ball.Cog.ThrowBall.ResetBall();
+                this.Jumps = 1;
+                this.CanTeleport = false;
+            }
+        }
+        else
+        {
+            if(Zero.Keyboard.KeyIsDown(Keys.A))
+            {
+                movement.X -= 1.0;
+            }
+            if(Zero.Keyboard.KeyIsDown(Keys.D))
+            {
+                movement.X += 1.0;
+            }
+
+            if(Zero.Keyboard.KeyIsPressed(Keys.W))
+            {            
+                if(this.Owner.SweptController.Grounded)
+                {
+                    this.Owner.SweptController.Jump();
+                }
+                else if(this.Jumps > 0)
+                {
+                    this.Owner.SweptController.JumpUnconditionally();
+                    --this.Jumps;
+                }
+                --this.Jumps;
+            }
+            
+            if(Zero.Keyboard.KeyIsDown(Keys.W) == false)
+            {
+                if(this.Owner.SweptController.Jumping)
+                {
+                    this.Owner.SweptController.JumpCancel();
+                }
+            }
+            
+            if(Zero.Keyboard.KeyIsPressed(Keys.Space) && this.CanTeleport && this.SafeTeleport)
+            {
+                this.Ball.Cog.RigidBody.Velocity = Real3(0,0,0);
+                this.Owner.Transform.Translation = this.Ball.Cog.Transform.Translation;
+                this.Ball.Cog.ThrowBall.ResetBall();
+                this.Jumps = 1;
+                this.CanTeleport = false;
+            }
+        }
+        
+        if(this.CanTeleport && this.SafeTeleport)
+        {
+            this.Ball.Cog.Sprite.Color = this.Green;
+        }
+        else
+        {
+            this.Ball.Cog.Sprite.Color = this.Red;
+        }
+
+        this.Owner.SweptController.Update(movement, event.Dt);
+    }
+}

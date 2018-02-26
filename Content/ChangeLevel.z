@@ -1,0 +1,17 @@
+class ChangeLevel : ZilchComponent
+{
+    [Property]
+    var LevelToLoad : Level = null;
+    function Initialize(init : CogInitializer)
+    {
+        Zero.Connect(this.Owner, Events.CollisionStarted, this.OnCollisionStarted);
+    }
+
+    function OnCollisionStarted(event : CollisionEvent)
+    {
+        if(event.OtherObject.Name == "Player")
+        {
+            this.Space.LoadLevel(this.LevelToLoad);
+        }
+    }
+}

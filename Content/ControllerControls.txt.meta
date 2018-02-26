@@ -1,0 +1,8 @@
+TextContent = 
+{
+	TextBuilder = 
+	{
+		string Name = "ControllerControls",
+		uint64 ResourceId = 585bbf9c6e54939a,
+	},
+},

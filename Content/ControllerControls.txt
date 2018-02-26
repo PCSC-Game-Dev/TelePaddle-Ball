@@ -1,0 +1,6 @@
+Dpad or left stick to move
+LB or A to jump
+LT or X to teleport
+Aim with the right joystick
+RT or B to throw
+RB or Y to retract

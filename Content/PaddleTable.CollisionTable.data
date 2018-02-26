@@ -1,0 +1,22 @@
+CollisionTable = 
+{
+	Array RegisteredGroups = 
+	[
+		"4e740859314e5515:DefaultGroup",
+		"58416a852c0ecb69:PlayerGroup",
+	],
+	Array CollisionFilters = 
+	[
+		{
+			string TypeA = "58416a852c0ecb69:PlayerGroup",
+			string TypeB = "58416a852c0ecb69:PlayerGroup",
+			bool SkipResolution = false,
+			bool SkipDetectingCollision = true,
+			bool StartEvent = false,
+			bool EndEvent = false,
+			bool PersistedEvent = false,
+			bool PreSolveEvent = false,
+		},
+	],
+	bool AutoRegister = true,
+},

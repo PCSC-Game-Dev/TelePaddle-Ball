@@ -1,0 +1,112 @@
+class ControlSelect : ZilchComponent
+{
+    var DataCog : Cog = null;
+    var Controller : Gamepad = null;
+    
+    [Property]
+    var DisabledColor : Real4 = Real4();
+    
+    var MenuItems : Array[Cog] = new Array[Cog]();
+    
+    function Initialize(init : CogInitializer)
+    {
+        this.Controller = Zero.Gamepads.GetGamePad(0);
+        this.DataCog = Zero.ObjectStore.RestoreOrArchetype("Data", Archetype.Data, this.Space);
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+        if(!this.Controller.IsActive)
+        {
+            this.Space.FindObjectByName("Controller").SpriteText.Color = this.DisabledColor;
+        }
+        Zero.Connect(this.Controller, Events.GamepadStickFlicked, this.OnGamepadStickFlicked);
+        
+        var menuItems = this.Space.AllObjects();
+        
+        foreach( var item in menuItems)
+        {
+            if(item.LevelToLoad != null)
+            {
+                this.MenuItems.Add(item);
+            }
+        }
+    }
+
+    function OnGamepadStickFlicked(event : GamepadEvent)
+    {
+        if(event.FlickedStick == 1 && Math.Abs(event.FlickDirection.Y) > 0.5)
+        {
+            for(var i = 0; i < this.MenuItems.Count; ++i)
+            {
+                if(this.Owner.Transform.Translation.Y == this.MenuItems[i].Transform.Translation.Y - 0.5)
+                {
+                    var currentPos = this.Owner.Transform.Translation;
+                    if(i < this.MenuItems.Count - 1)
+                    {
+                        if(this.MenuItems[i + 1].Name == "Controller" && !this.Controller.IsActive)
+                        {
+                            break;
+                        }
+                        currentPos = this.MenuItems[i + 1].Transform.Translation;
+                        currentPos.Y -= 0.5;
+                    }
+                    else
+                    {
+                        currentPos = this.MenuItems[0].Transform.Translation;
+                        currentPos.Y -= 0.5;
+                    }
+                    this.Owner.Transform.Translation = currentPos;
+                    break;
+                }
+            }
+        }
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        if(Zero.Keyboard.KeyIsPressed(Keys.Down) || Zero.Keyboard.KeyIsPressed(Keys.Up) || 
+            Zero.Keyboard.KeyIsPressed(Keys.W) || Zero.Keyboard.KeyIsPressed(Keys.S) ||
+            this.Controller.IsButtonPressed(Buttons.DpadUp) || this.Controller.IsButtonPressed(Buttons.DpadDown))
+        {
+            for(var i = 0; i < this.MenuItems.Count; ++i)
+            {
+                if(this.Owner.Transform.Translation.Y == this.MenuItems[i].Transform.Translation.Y - 0.5)
+                {
+                    var currentPos = this.Owner.Transform.Translation;
+                    if(i < this.MenuItems.Count - 1)
+                    {
+                        if(this.MenuItems[i + 1].Name == "Controller" && !this.Controller.IsActive)
+                        {
+                            break;
+                        }
+                        currentPos = this.MenuItems[i + 1].Transform.Translation;
+                        currentPos.Y -= 0.5;
+                    }
+                    else
+                    {
+                        currentPos = this.MenuItems[0].Transform.Translation;
+                        currentPos.Y -= 0.5;
+                    }
+                    this.Owner.Transform.Translation = currentPos;
+                    break;
+                }
+            }
+        }
+        if(Zero.Keyboard.KeyIsPressed(Keys.Enter) || this.Controller.IsButtonPressed(Buttons.A))
+        {
+            if(this.Owner.Transform.Translation.Y == this.MenuItems[0].Transform.Translation.Y - 0.5)
+            {
+                this.DataCog.DataSaver.UseController = false;
+            }
+            else
+            {
+                this.DataCog.DataSaver.UseController = true;
+            }
+            Zero.ObjectStore.Store("Data", this.DataCog);
+            this.Space.LoadLevel(Level.Start);
+        }
+        
+        if(Zero.Keyboard.KeyIsPressed(Keys.Back) || this.Controller.IsButtonPressed(Buttons.B))
+        {
+            this.Space.LoadLevel(Level.Options);
+        }
+    }
+}
