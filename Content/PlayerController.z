@@ -23,7 +23,6 @@ class PlayerController : ZilchComponent
     
     function Initialize(init : CogInitializer)
     {
-        Zero.Mouse.Cursor = Cursor.Invisible;
         this.Controller = Zero.Gamepads.GetGamePad(0);
         this.Aim = this.Owner.FindChildByName("Aim");
         this.DataCog = Zero.ObjectStore.RestoreOrArchetype("Data", Archetype.Data, this.Space);
@@ -34,6 +33,10 @@ class PlayerController : ZilchComponent
         if(!(this.Controller.IsActive && this.UseController))
         {
             Zero.Connect(this.LevelSettings, Events.MouseUpdate, this.OnMouseUpdate);
+        }
+        else
+        {
+            Zero.Mouse.Cursor = Cursor.Invisible;
         }
     }
 
@@ -47,7 +50,6 @@ class PlayerController : ZilchComponent
 
     function OnMouseUpdate(event : ViewportMouseEvent)
     {
-        Zero.Mouse.Cursor = Cursor.Invisible;
         var mousePosition = event.ToWorldZPlane(0.0);
         var playerPosition = this.Owner.Transform.WorldTranslation;
         var vectorToMouse = mousePosition - playerPosition;
